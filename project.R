@@ -7,6 +7,3 @@ file_path <- "C:\\Users\\HP\\OneDrive - Strathmore University\\Strathmore\\Year 
 # Read the CSV file into a data frame
 Batting_data <- read_csv(file_path)
 
-# Display the first few rows of the data frame
-head(Batting_data)
-
