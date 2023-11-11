@@ -95,3 +95,9 @@ correlation_matrix <- cor(numeric_vars)
 # Display the correlation matrix
 print("Correlation Matrix:")
 print(correlation_matrix)
+
+model <- aov(Runs ~ `Righty or Lefty`, data = Batting_data_no_missing)
+
+# Display the ANOVA table
+print("ANOVA Table:")
+print(summary(model))
