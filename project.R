@@ -121,3 +121,32 @@ heatmap_plot <- ggplot(data = reshape2::melt(corr_matrix), aes(Var1, Var2, fill 
   labs(title = "Correlation Heatmap")
 
 print(heatmap_plot)
+
+# Confirmation of the presence of missing values
+missing_values <- any(is.na(Batting_data))
+cat("Missing Values Present: ", missing_values, "\n")
+
+# Remove rows with missing values
+Batting_data_no_missing <- Batting_data[complete.cases(Batting_data), ]
+
+# Display the dimensions of the dataset without missing values
+no_missing_dim <- dim(Batting_data_no_missing)
+cat("Dataset Dimensions after Removing Rows with Missing Values:", no_missing_dim[1], "rows and", no_missing_dim[2], "columns\n")
+
+# Impute missing values in the "Runs" column with the mean of non-missing values
+mean_runs <- mean(Batting_data_no_missing$Runs, na.rm = TRUE)
+Batting_data_no_missing$Runs[is.na(Batting_data_no_missing$Runs)] <- mean_runs
+
+# Scale numeric variables (you can choose a different transformation method if needed)
+numeric_vars <- Batting_data_no_missing[, sapply(Batting_data_no_missing, is.numeric)]
+scaled_data <- as.data.frame(scale(numeric_vars))
+
+# Univariate plot (histogram for Runs variable)
+ggplot(Batting_data_no_missing, aes(x = Runs)) +
+  geom_histogram(binwidth = 10, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "Histogram of Runs", x = "Runs", y = "Frequency")
+
+# Multivariate plot (scatter plot for Runs and Bowls variables)
+ggplot(Batting_data_no_missing, aes(x = Runs, y = Bowls)) +
+  geom_point(color = "green") +
+  labs(title = "Scatter Plot of Runs and Bowls", x = "Runs", y = "Bowls")
