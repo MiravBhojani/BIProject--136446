@@ -150,3 +150,19 @@ ggplot(Batting_data_no_missing, aes(x = Runs)) +
 ggplot(Batting_data_no_missing, aes(x = Runs, y = Bowls)) +
   geom_point(color = "green") +
   labs(title = "Scatter Plot of Runs and Bowls", x = "Runs", y = "Bowls")
+
+# Install and load the caret package
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret")
+}
+library(caret)
+
+# Set the seed for reproducibility
+set.seed(123)
+
+# Create an index for data partitioning
+index <- createDataPartition(Batting_data_no_missing$Runs, p = 0.8, list = FALSE)
+
+# Split the data into training and testing sets
+train_data <- Batting_data_no_missing[index, ]
+test_data <- Batting_data_no_missing[-index, ]
