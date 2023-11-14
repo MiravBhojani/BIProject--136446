@@ -1,5 +1,7 @@
-# Load the readr package
+# Load necessary libraries
 library(readr)
+library(e1071)
+library(corrplot)
 
 # Specify the file path with double backslashes
 file_path <- "C:\\Users\\HP\\OneDrive - Strathmore University\\Strathmore\\Year 4\\4.2\\Business Intelligence 2\\BIProject\\BIProject--136446\\data\\Batting data.csv"
@@ -18,8 +20,6 @@ Batting_data_no_missing <- Batting_data[complete.cases(Batting_data), ]
 no_missing_dim <- dim(Batting_data_no_missing)
 cat("Dataset Dimensions after Removing Rows with Missing Values:", no_missing_dim[1], "rows and", no_missing_dim[2], "columns\n")
 
-# Now you can use Batting_data_no_missing for subsequent analysis
-
 # Assuming "Righty or Lefty" is a categorical variable in your dataset
 righty_lefty_frequency <- table(Batting_data_no_missing$`Righty or Lefty`)  # Corrected column name
 
@@ -30,64 +30,39 @@ frequency_table <- cbind(frequency = righty_lefty_frequency,
 # Print the frequency table
 print(frequency_table)
 
-# Mean
+# Mean, Median, Mode
 mean_value <- mean(Batting_data_no_missing$Runs)
-
-# Median
 median_value <- median(Batting_data_no_missing$Runs)
-
-# Mode
 get_mode <- function(x) {
   unique_x <- unique(x)
   unique_x[which.max(tabulate(match(x, unique_x)))]
 }
-
 mode_value <- get_mode(Batting_data_no_missing$Runs)
 
 # Display the results
 cat("Mean: ", mean_value, "\n")
 cat("Median: ", median_value, "\n")
 cat("Mode: ", mode_value, "\n")
-summary(Batting_data_no_missing)
 
 # Standard deviation for columns 3 to 12
 sapply(Batting_data_no_missing[, 3:12], sd)
-# Install and load the e1071 package
-if (!is.element("e1071", installed.packages()[, 1])) {
-  install.packages("e1071", dependencies = TRUE)
-}
-require("e1071")
 
-# Assuming "Runs" is a numeric variable in your Batting data
-# Adjust the column index accordingly if needed
+# Kurtosis and skewness for Runs
 kurtosis_runs <- kurtosis(Batting_data_no_missing$Runs, type = 2)
-
-# Display the kurtosis for the "Runs" variable
-print("Kurtosis for Runs:")
-print(kurtosis_runs)
-
 skewness_runs <- skewness(Batting_data_no_missing$Runs)
 
-# Display the skewness for the "Runs" variable
-print("Skewness for Runs:")
-print(skewness_runs)
-# Adjust the column index or names based on your dataset structure
-numeric_vars <- Batting_data_no_missing[, sapply(Batting_data_no_missing, is.numeric)]
-
-# Exclude the categorical variable "Righty or Lefty" from the numeric variables
-numeric_vars <- numeric_vars[, !colnames(numeric_vars) %in% c("Righty or Lefty")]
+# Display kurtosis and skewness for the "Runs" variable
+cat("Kurtosis for Runs:", kurtosis_runs, "\n")
+cat("Skewness for Runs:", skewness_runs, "\n")
 
 # Calculate covariance matrix
+numeric_vars <- Batting_data_no_missing[, sapply(Batting_data_no_missing, is.numeric)]
+numeric_vars <- numeric_vars[, !colnames(numeric_vars) %in% c("Righty or Lefty")]
 covariance_matrix <- cov(numeric_vars)
 
 # Display the covariance matrix
 print("Covariance Matrix:")
 print(covariance_matrix)
-
-numeric_vars <- Batting_data_no_missing[, sapply(Batting_data_no_missing, is.numeric)]
-
-# Exclude the categorical variable "Righty or Lefty" from the numeric variables
-numeric_vars <- numeric_vars[, !colnames(numeric_vars) %in% c("Righty or Lefty")]
 
 # Calculate correlation matrix
 correlation_matrix <- cor(numeric_vars)
@@ -96,8 +71,53 @@ correlation_matrix <- cor(numeric_vars)
 print("Correlation Matrix:")
 print(correlation_matrix)
 
+# ANOVA
 model <- aov(Runs ~ `Righty or Lefty`, data = Batting_data_no_missing)
-
-# Display the ANOVA table
 print("ANOVA Table:")
 print(summary(model))
+
+# Check for homogeneity of variances
+bartlett_test <- bartlett.test(Runs ~ `Righty or Lefty`, data = Batting_data_no_missing)
+print("Bartlett Test for Homogeneity of Variances:")
+print(bartlett_test)
+
+# If Bartlett's test is significant, consider Welch's ANOVA
+welch_model <- aov(Runs ~ `Righty or Lefty`, data = Batting_data_no_missing, var.equal = FALSE)
+print("Welch's ANOVA Table:")
+print(summary(welch_model))
+
+# Univariate Visualizations
+hist(Batting_data_no_missing$Runs, main = "Histogram of Runs", xlab = "Runs", col = "skyblue", border = "black")
+
+boxplot(Batting_data_no_missing$Runs, main = "Boxplot of Runs", ylab = "Runs", col = "lightgreen", border = "black")
+
+plot(density(Batting_data_no_missing$Runs), main = "Density Plot of Runs", xlab = "Runs", col = "salmon", lwd = 2)
+
+# Scatterplot matrix for numeric variables
+pairs(numeric_vars)
+
+# Correlation matrix plot
+corrplot(correlation_matrix, method = "circle", tl.cex = 0.7, title = "Correlation Matrix")
+
+# Load necessary libraries (if not already loaded)
+if (!is.element("ggplot2", installed.packages()[, 1])) {
+  install.packages("ggplot2", dependencies = TRUE)
+}
+library(ggplot2)
+
+# Scatterplot matrix for numeric variables using ggplot2
+scatterplot_matrix <- ggplot(Batting_data_no_missing, aes(x = Runs, y = `Performance Runs 5`)) +
+  geom_point() +
+  labs(title = "Scatterplot Matrix", x = "Runs", y = "Performance Runs 5")
+
+print(scatterplot_matrix)
+
+# Heatmap for the correlation matrix
+corr_matrix <- cor(numeric_vars)
+heatmap_plot <- ggplot(data = reshape2::melt(corr_matrix), aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", midpoint = 0, limit = c(-1, 1), space = "Lab", name = "Correlation") +
+  theme_minimal() +
+  labs(title = "Correlation Heatmap")
+
+print(heatmap_plot)
