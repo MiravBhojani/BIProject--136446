@@ -166,3 +166,34 @@ index <- createDataPartition(Batting_data_no_missing$Runs, p = 0.8, list = FALSE
 # Split the data into training and testing sets
 train_data <- Batting_data_no_missing[index, ]
 test_data <- Batting_data_no_missing[-index, ]
+
+
+# Bootstrapping
+set.seed(123)  # Set seed for reproducibility
+
+# Number of bootstrap samples
+num_bootstraps <- 1000
+
+# Create an empty vector to store bootstrap sample means
+bootstrap_means <- numeric(num_bootstraps)
+
+# Perform bootstrapping
+for (i in 1:num_bootstraps) {
+  # Sample with replacement from the training data
+  bootstrap_sample <- sample(train_data$Runs, replace = TRUE)
+  
+  # Calculate the mean of the bootstrap sample
+  bootstrap_means[i] <- mean(bootstrap_sample)
+}
+
+# Display bootstrap results
+cat("Bootstrap Sample Means:", bootstrap_means, "\n")
+
+# Plot the distribution of bootstrap sample means
+hist(bootstrap_means, main = "Distribution of Bootstrap Sample Means", xlab = "Mean", col = "lightblue", border = "black")
+
+# Calculate confidence interval for the mean
+confidence_interval <- quantile(bootstrap_means, c(0.025, 0.975))
+cat("95% Confidence Interval for the Mean:", confidence_interval, "\n")
+
+
