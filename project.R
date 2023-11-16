@@ -196,4 +196,49 @@ hist(bootstrap_means, main = "Distribution of Bootstrap Sample Means", xlab = "M
 confidence_interval <- quantile(bootstrap_means, c(0.025, 0.975))
 cat("95% Confidence Interval for the Mean:", confidence_interval, "\n")
 
+# Load necessary libraries
+library(caret)
+library(e1071)
+
+# Set the seed for reproducibility
+set.seed(123)
+
+# Create an index for data partitioning
+index <- createDataPartition(Batting_data_no_missing$Runs, p = 0.8, list = FALSE)
+
+# Split the data into training and testing sets
+train_data <- Batting_data_no_missing[index, ]
+test_data <- Batting_data_no_missing[-index, ]
+
+# Create a repeated k-fold cross-validation object
+cv <- trainControl(
+  method = "repeatedcv",
+  number = 10,    # Number of folds
+  repeats = 3,    # Number of repeats
+  verboseIter = TRUE
+)
+
+# Specify the model
+model <- train(
+  Runs ~ .,                  # Response variable and predictors
+  data = train_data,          # Training data
+  method = "lm",              # Linear regression as an example
+  trControl = cv              # Cross-validation settings
+)
+
+# Display the cross-validation results
+print(model)
+
+# Make predictions on the test set
+predictions <- predict(model, newdata = test_data)
+
+# Evaluate the model performance on the test set
+performance <- sqrt(mean((test_data$Runs - predictions)^2))
+cat("Root Mean Squared Error on Test Set:", performance, "\n")
+
+# Extract detailed cross-validation results
+cv_results <- resamples(model)
+summary(cv_results)
+
+
 
