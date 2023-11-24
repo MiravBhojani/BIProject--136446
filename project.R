@@ -107,3 +107,29 @@ selected_data <- batting_data[numerical_columns]
 # Create a scatterplot matrix
 ggpairs(selected_data)
 
+# Check for missing data
+missing_data_count <- colSums(is.na(batting_data))
+print(missing_data_count)
+
+# Impute missing values for numerical columns with mean
+for (column in numerical_columns) {
+  if (is.numeric(batting_data[[column]]) && sum(is.na(batting_data[[column]])) > 0) {
+    batting_data[[column]][is.na(batting_data[[column]])] <- mean(batting_data[[column]], na.rm = TRUE)
+  }
+}
+
+# Impute missing values for categorical columns with mode
+categorical_columns <- setdiff(names(batting_data), numerical_columns)
+for (column in categorical_columns) {
+  if (sum(is.na(batting_data[[column]])) > 0) {
+    batting_data[[column]][is.na(batting_data[[column]])] <- get_mode(batting_data[[column]])
+  }
+}
+batting_data$Runs <- log(batting_data$Runs + 1) # Adding 1 to avoid log of zero
+
+batting_data$Balls <- scale(batting_data$Balls)
+
+batting_data <- cbind(batting_data, model.matrix(~Out - 1, data = batting_data))
+
+# Summary of the transformed data
+summary(batting_data)
