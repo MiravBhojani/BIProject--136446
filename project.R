@@ -72,3 +72,38 @@ library(stats)
 model_anova <- aov(Runs ~ Out, data = batting_data)
 summary(model_anova)
 
+# Load necessary libraries for plotting (if not already loaded)
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+# Assuming 'Runs' is one of the numerical variables in your dataset
+# Replace 'Runs' with the actual column name you want to plot
+ggplot(batting_data, aes(x = Runs)) +
+  geom_histogram(binwidth = 10, fill = "skyblue", color = "black") +
+  labs(title = "Histogram of Runs", x = "Runs", y = "Frequency")
+
+ggplot(batting_data, aes(x = Runs)) +
+  geom_boxplot(fill = "lightgreen", color = "black") +
+  labs(title = "Boxplot of Runs", y = "Runs")
+
+ggplot(batting_data, aes(x = Runs)) +
+  geom_density(fill = "salmon", color = "black") +
+  labs(title = "Density Plot of Runs", x = "Runs")
+
+# Load necessary libraries (if not already loaded)
+if (!requireNamespace("GGally", quietly = TRUE)) {
+  install.packages("GGally")
+}
+library(GGally)
+
+# Define numerical columns for multivariate analysis
+numerical_columns <- c("Runs", "Balls", "Fours", "Sixes")
+
+# Select the numerical columns for the scatterplot matrix
+selected_data <- batting_data[numerical_columns]
+
+# Create a scatterplot matrix
+ggpairs(selected_data)
+
