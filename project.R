@@ -133,3 +133,93 @@ batting_data <- cbind(batting_data, model.matrix(~Out - 1, data = batting_data))
 
 # Summary of the transformed data
 summary(batting_data)
+
+# Load necessary libraries (if not already loaded)
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret")
+}
+library(caret)
+
+# Set a seed for reproducibility
+set.seed(123)
+
+# Split the data into training and testing sets (e.g., 80% training, 20% testing)
+train_indices <- createDataPartition(batting_data$Runs, p = 0.8, list = FALSE)
+train_data <- batting_data[train_indices, ]
+test_data <- batting_data[-train_indices, ]
+
+# Check the dimensions of the resulting sets
+dim(train_data)
+dim(test_data)
+
+# Load necessary libraries (if not already loaded)
+if (!requireNamespace("boot", quietly = TRUE)) {
+  install.packages("boot")
+}
+library(boot)
+
+# Set a seed for reproducibility
+set.seed(123)
+
+# Create a function for bootstrapping with a classification model
+your_classification_model <- function(data) {
+}
+
+# Create a bootstrapping function
+bootstrap_func <- function(data, indices) {
+  sample_data <- data[indices, ]
+  return(your_classification_model(sample_data))
+}
+
+# Run the bootstrap procedure
+results <- boot(data = as.matrix(batting_data), statistic = bootstrap_func, R = 1000)
+
+# Access and print specific results (for example, the first 10)
+print(results$t[1:1000, ])  # Adjust the range as needed
+
+# Load necessary libraries (if not already loaded)
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret")
+}
+library(caret)
+
+# Set the number of folds for cross-validation
+num_folds <- 10  # You can adjust this number as needed
+
+# Set up the control parameters for cross-validation
+train_control <- trainControl(method = "cv", number = num_folds)
+
+# Remove duplicated columns in the dataset
+batting_data <- batting_data[ , !duplicated(names(batting_data))]
+
+# Train the classification model using k-fold cross-validation
+model <- train(
+  Runs ~ .,  # Replace 'Runs' with your target variable
+  data = batting_data,
+  method = "rf",  # Replace "rf" with the method you're using, e.g., "glm", "svm", etc.
+  trControl = train_control
+)
+# Access the cross-validation results
+print(model)
+# Load necessary libraries (if not already loaded)
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret")
+}
+library(caret)
+
+# Set the number of folds for cross-validation
+num_folds <- 1000
+
+# Set up the control parameters for cross-validation
+train_control <- trainControl(method = "cv", number = num_folds)
+
+# Train the classification model using k-fold cross-validation
+model <- train(
+  Runs ~ .,  # Replace 'Runs' with your target variable
+  data = batting_data,
+  method = "rf",  # Replace "rf" with the method you're using, e.g., "glm", "svm", etc.
+  trControl = train_control
+)
+
+# Access the cross-validation results
+print(model)
