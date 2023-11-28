@@ -17,6 +17,11 @@ if (!requireNamespace("e1071", quietly = TRUE)) {
   install.packages("e1071")
 }
 library(e1071)
+get_mode <- function(x) {
+  unique_x <- unique(x)
+  unique_x[which.max(tabulate(match(x, unique_x)))]
+}
+
 
 # Define numerical columns
 numerical_columns <- c("Runs", "Balls", "Fours", "Sixes")
@@ -223,3 +228,65 @@ model <- train(
 
 # Access the cross-validation results
 print(model)
+# Load necessary libraries (if not already loaded)
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret")
+}
+library(caret)
+
+# Set the number of folds for cross-validation
+num_folds <- 10
+
+# Set up the control parameters for cross-validation
+train_control <- trainControl(method = "cv", number = num_folds)
+
+# Define the search grid
+grid <- expand.grid(
+  mtry = seq(2, 10, by = 2),  # Example grid for 'mtry' parameter
+  nodesize = seq(1, 5, by = 1)  # Example grid for 'nodesize' parameter
+)
+
+# Train multiple classification models
+model1 <- train(
+  Runs ~ .,  # Replace 'Runs' with your target variable
+  data = batting_data,
+  method = "rf",  # Replace "rf" with the method you're using, e.g., "glm", "svm", etc.
+  trControl = train_control,
+  tuneGrid = grid  # Apply the defined grid
+)
+
+model2 <- train(
+  Runs ~ .,
+  data = batting_data,
+  method = "glm",  # Example of another method
+  trControl = train_control
+)
+
+# Create a list of models
+models_list <- list(model1, model2)
+
+# Compare models using resamples
+comparison <- resamples(models_list)
+
+# Print the summary of model comparison
+print(summary(comparison))
+
+# Train the classification model using boosting (AdaBoost with Random Forest)
+model <- train(
+  formula = as.formula(paste(target_variable, "~ .")),  
+  data = batting_data,
+  method = "adaboost",
+  trControl = train_control,
+  tuneLength = 5,  # Adjust this parameter for tuning
+  metric = "RMSE"  # Adjust the metric based on your evaluation criterion
+)
+
+# Access the trained model
+print(model)
+
+# Load necessary libraries
+library(plumber)
+
+# Define and run the plumber API
+plumber_api <- plumb("path_to_your_script.R")  # Replace with your script path
+plumber_api$run(port = 8000)  # Choose any available port
